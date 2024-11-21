@@ -1,0 +1,63 @@
+version: "3"
+
+networks:
+  flask_net:
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    expose:
+      - "5000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/flask_db
+    networks:
+      - flask_net
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: flask_db
+    ports:
+      - "5432:5432"
+    networks:
+      - flask_net
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+    networks:
+      - flask_net
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./letsencrypt:/etc/letsencrypt
+      - ./certbot:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - web
+    networks:
+      - flask_net
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      - db
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/flask_db
