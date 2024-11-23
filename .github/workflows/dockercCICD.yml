@@ -63,7 +63,7 @@ jobs:
             APP_DIR="/root/Cloud"
 
             if [ ! -d "$APP_DIR" ]; then
-              git clone https://github.com/Rollest/cloud5 $APP_DIR
+              git clone https://github.com/TravUdav/oblako $APP_DIR
             else
               cd "$APP_DIR" || exit 1
               git fetch --all
